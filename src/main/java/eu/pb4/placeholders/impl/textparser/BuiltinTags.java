@@ -13,10 +13,8 @@ import eu.pb4.placeholders.api.parsers.tag.TextTag;
 import eu.pb4.placeholders.impl.GeneralUtils;
 import eu.pb4.placeholders.impl.StringArgOps;
 import net.minecraft.entity.EntityType;
-import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.StringNbtReader;
-import net.minecraft.registry.DynamicRegistryManager;
-import net.minecraft.registry.Registries;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
@@ -321,23 +319,29 @@ public final class BuiltinTags {
                                         } else if (type.equals("show_item") || type.equals("item")) {
                                             var value = data.getNext("value", "");
                                             try {
-                                                return new HoverNode<>(nodes,
-                                                        HoverNode.Action.ITEM_STACK,
-                                                        new HoverEvent.ItemStackContent(ItemStack.fromNbtOrEmpty(DynamicRegistryManager.EMPTY, StringNbtReader.parse(value)))
-                                                );
-                                            } catch (Throwable e) {
-                                                var stack = Registries.ITEM.get(Identifier.tryParse(data.get("item", value))).getDefaultStack();
+                                                var nbt = StringNbtReader.parse(value);
+                                                var id = Identifier.of(nbt.getString("id"));
+                                                var count = nbt.contains("count") ? nbt.getInt("count") : 1;
 
-                                                var count = data.getNext("count");
-                                                if (count != null) {
-                                                    stack.setCount(Integer.parseInt(count));
+                                                var comps = nbt.getCompound("components");
+                                                return new HoverNode<>(nodes,
+                                                        HoverNode.Action.LAZY_ITEM_STACK,
+                                                        new HoverNode.LazyItemStackNodeContent<>(id, count, NbtOps.INSTANCE, comps));
+                                            } catch (Throwable ignored) {}
+                                            try {
+                                                var item = Identifier.of(data.get("item", value));
+                                                var count = 1;
+                                                var countTxt = data.getNext("count");
+                                                if (countTxt != null) {
+                                                    count = Integer.parseInt(countTxt);
                                                 }
 
                                                 return new HoverNode<>(nodes,
-                                                        HoverNode.Action.ITEM_STACK,
-                                                        new HoverEvent.ItemStackContent(stack)
+                                                        HoverNode.Action.LAZY_ITEM_STACK,
+                                                        new HoverNode.LazyItemStackNodeContent<>(item, count,
+                                                                StringArgOps.INSTANCE, Either.right(data.getNestedOrEmpty("components")))
                                                 );
-                                            }
+                                            } catch (Throwable ignored) {}
                                         } else {
                                             return new HoverNode<>(nodes, HoverNode.Action.TEXT, parser.parseNode(data.get("value", type)));
                                         }

@@ -29,6 +29,10 @@ Prior to 1.19, arguments were separated with a slash (`/`) instead of space.
 - `%player:pos_x%` - The player's `x` coordinate.
 - `%player:pos_y%` - The player's `y` coordinate.
 - `%player:pos_z%` - The player's `z` coordinate.
+- `%player:facing%` (2.5.1+) - The player's horizontal direction.
+- `%player:facing_axis%` (2.5.1+) - The player's horizontal direction in format of `+/-A` (A si replaced with axis).
+- `%player:horizontal_facing%` (2.5.1+) - The player's horizontal facing direction.
+- `%player:horizontal_facing_axis%` (2.5.1+) - The player's horizontal facing direction in format of `+/-A` (A si replaced with axis).
 - `%player:health%` - The player's health.
 - `%player:max_health%` - The player's max health.
 - `%player:hunger%` - The player's hunger.

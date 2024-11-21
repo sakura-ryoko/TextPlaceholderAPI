@@ -1,12 +1,20 @@
 package eu.pb4.placeholders.api.node.parent;
 
+import com.mojang.serialization.DynamicOps;
 import eu.pb4.placeholders.api.ParserContext;
+import eu.pb4.placeholders.api.PlaceholderContext;
 import eu.pb4.placeholders.api.node.TextNode;
 import eu.pb4.placeholders.api.parsers.NodeParser;
+import net.minecraft.component.ComponentChanges;
 import net.minecraft.entity.EntityType;
+import net.minecraft.item.ItemStack;
+import net.minecraft.registry.RegistryKey;
+import net.minecraft.registry.RegistryKeys;
+import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Style;
 import net.minecraft.text.Text;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Arrays;
@@ -28,6 +36,17 @@ public final class HoverNode<T, H> extends SimpleStylingNode {
             return Style.EMPTY.withHoverEvent(new HoverEvent((HoverEvent.Action<Object>) this.action.vanillaType(), ((TextNode) this.value).toText(context, true)));
         } else if (this.action == Action.ENTITY) {
             return Style.EMPTY.withHoverEvent(new HoverEvent((HoverEvent.Action<Object>) this.action.vanillaType(), ((EntityNodeContent) this.value).toVanilla(context)));
+        } else if (this.action == Action.LAZY_ITEM_STACK) {
+            RegistryWrapper.WrapperLookup wrapper;
+            if (context.contains(ParserContext.Key.WRAPPER_LOOKUP)) {
+                wrapper = context.getOrThrow(ParserContext.Key.WRAPPER_LOOKUP);
+            } else if (context.contains(PlaceholderContext.KEY)) {
+                wrapper = context.getOrThrow(PlaceholderContext.KEY).server().getRegistryManager();
+            } else {
+                return Style.EMPTY;
+            }
+
+            return Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, ((LazyItemStackNodeContent) this.value).toVanilla(wrapper)));
         } else {
             return Style.EMPTY.withHoverEvent(new HoverEvent((HoverEvent.Action<Object>) this.action.vanillaType(), this.value));
         }
@@ -68,18 +87,29 @@ public final class HoverNode<T, H> extends SimpleStylingNode {
 
     @Override
     public boolean isDynamicNoChildren() {
-        return (this.action == Action.TEXT && ((TextNode) this.value).isDynamic()) || (this.action == Action.ENTITY && ((EntityNodeContent) this.value).name.isDynamic());
+        return (this.action == Action.TEXT && ((TextNode) this.value).isDynamic()) || (this.action == Action.ENTITY && ((EntityNodeContent) this.value).name.isDynamic()) || this.action == Action.LAZY_ITEM_STACK;
     }
 
     public record Action<T, H>(HoverEvent.Action<H> vanillaType) {
         public static final Action<EntityNodeContent, HoverEvent.EntityContent> ENTITY = new Action<>(HoverEvent.Action.SHOW_ENTITY);
-        public static final Action<HoverEvent.ItemStackContent, HoverEvent.ItemStackContent> ITEM_STACK = new Action<>(HoverEvent.Action.SHOW_ITEM);
         public static final Action<TextNode, Text> TEXT = new Action<>(HoverEvent.Action.SHOW_TEXT);
+
+        public static final Action<HoverEvent.ItemStackContent, HoverEvent.ItemStackContent> ITEM_STACK = new Action<>(HoverEvent.Action.SHOW_ITEM);
+        public static final Action<LazyItemStackNodeContent, HoverEvent.ItemStackContent> LAZY_ITEM_STACK = new Action<>(HoverEvent.Action.SHOW_ITEM);
     }
 
     public record EntityNodeContent(EntityType<?>entityType, UUID uuid, @Nullable TextNode name) {
         public HoverEvent.EntityContent toVanilla(ParserContext context) {
             return new HoverEvent.EntityContent(this.entityType, this.uuid, this.name != null ? this.name.toText(context, true) : null);
+        }
+    }
+
+    public record LazyItemStackNodeContent<T>(Identifier identifier, int count, DynamicOps<T> ops, T componentMap) {
+        public HoverEvent.ItemStackContent toVanilla(RegistryWrapper.WrapperLookup lookup) {
+            var stack = new ItemStack(lookup.getOrThrow(RegistryKeys.ITEM).getOrThrow(RegistryKey.of(RegistryKeys.ITEM, identifier)));
+            stack.setCount(count);
+            stack.applyChanges(ComponentChanges.CODEC.decode(lookup.getOps(ops), componentMap).getOrThrow().getFirst());
+            return new HoverEvent.ItemStackContent(stack);
         }
     }
 }

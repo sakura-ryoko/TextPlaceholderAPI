@@ -1,11 +1,9 @@
 package eu.pb4.placeholders.impl;
 
-import com.google.gson.JsonElement;
 import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
 import eu.pb4.placeholders.api.arguments.StringArgs;
 
 import java.util.stream.Stream;
@@ -42,7 +40,7 @@ public class StringArgOps implements DynamicOps<Either<String, StringArgs>> {
 
     @Override
     public DataResult<String> getStringValue(Either<String, StringArgs> input) {
-        return input.left().isPresent() ? DataResult.success(input.left().get()) : DataResult.error(() -> input + " is not a number!");
+        return input.left().isPresent() ? DataResult.success(input.left().get()) : DataResult.error(() -> input + " is not a string!");
     }
 
     @Override

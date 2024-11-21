@@ -14,7 +14,10 @@ import net.minecraft.stat.Stats;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Direction;
 import org.apache.commons.lang3.time.DurationFormatUtils;
+
+import java.util.Locale;
 
 
 public class PlayerPlaceholders {
@@ -277,6 +280,42 @@ public class PlayerPlaceholders {
                     /* Into the void you go! */
                 }
                 return PlaceholderResult.invalid("Invalid objective!");
+            } else {
+                return PlaceholderResult.invalid("No player!");
+            }
+        });
+
+        Placeholders.register(Identifier.of("player", "facing"), (ctx, arg) -> {
+            if (ctx.hasPlayer()) {
+                return PlaceholderResult.value(ctx.player().getFacing().asString());
+            } else {
+                return PlaceholderResult.invalid("No player!");
+            }
+        });
+
+        Placeholders.register(Identifier.of("player", "facing_axis"), (ctx, arg) -> {
+            if (ctx.hasPlayer()) {
+                var facing = ctx.player().getFacing();
+                return PlaceholderResult.value(
+                        (facing.getDirection() == Direction.AxisDirection.NEGATIVE ? "-" : "+") + facing.getAxis().asString().toUpperCase(Locale.ROOT));
+            } else {
+                return PlaceholderResult.invalid("No player!");
+            }
+        });
+
+        Placeholders.register(Identifier.of("player", "horizontal_facing"), (ctx, arg) -> {
+            if (ctx.hasPlayer()) {
+                return PlaceholderResult.value(ctx.player().getHorizontalFacing().asString());
+            } else {
+                return PlaceholderResult.invalid("No player!");
+            }
+        });
+
+        Placeholders.register(Identifier.of("player", "horizontal_facing_axis"), (ctx, arg) -> {
+            if (ctx.hasPlayer()) {
+                var facing = ctx.player().getHorizontalFacing();
+                return PlaceholderResult.value(
+                        (facing.getDirection() == Direction.AxisDirection.NEGATIVE ? "-" : "+") + facing.getAxis().asString().toUpperCase(Locale.ROOT));
             } else {
                 return PlaceholderResult.invalid("No player!");
             }

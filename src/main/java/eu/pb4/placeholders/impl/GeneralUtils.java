@@ -52,7 +52,9 @@ public class GeneralUtils {
     }
 
     private static int getGradientLength(Text base) {
-        int length = base.getContent() instanceof PlainTextContent.Literal l ? l.string().length() : base.getContent() == PlainTextContent.EMPTY ? 0 : 1;
+        int length = base.getContent() instanceof PlainTextContent.Literal l
+                ? l.string().codePointCount(0, l.string().length())
+                : base.getContent() == PlainTextContent.EMPTY ? 0 : 1;
 
         for (var text : base.getSiblings()) {
             length += getGradientLength(text);

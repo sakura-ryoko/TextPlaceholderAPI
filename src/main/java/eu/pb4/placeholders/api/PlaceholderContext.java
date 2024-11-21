@@ -12,9 +12,11 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec2f;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Supplier;
+
 
 public record PlaceholderContext(MinecraftServer server,
                                  Supplier<ServerCommandSource> lazySource,
@@ -69,7 +71,7 @@ public record PlaceholderContext(MinecraftServer server,
     }
 
     public ParserContext asParserContext() {
-        return ParserContext.of(KEY, this);
+        return ParserContext.of(KEY, this).with(ParserContext.Key.WRAPPER_LOOKUP, this.server.getRegistryManager());
     }
 
     public PlaceholderContext withView(ViewObject view) {
@@ -78,6 +80,7 @@ public record PlaceholderContext(MinecraftServer server,
 
     public void addToContext(ParserContext context) {
         context.with(KEY, this);
+        context.with(ParserContext.Key.WRAPPER_LOOKUP, this.server.getRegistryManager());
     }
 
 

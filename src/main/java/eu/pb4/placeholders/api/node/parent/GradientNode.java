@@ -103,7 +103,7 @@ public final class GradientNode extends ParentNode {
             if (hvs.isEmpty()) {
                 hvs.add(new OkLab(1, 1, 1));
             } else if (hvs.size() == 1) {
-                hvs.add(hvs.get(0));
+                hvs.add(hvs.getFirst());
             }
 
             final int colorSize = hvs.size();
