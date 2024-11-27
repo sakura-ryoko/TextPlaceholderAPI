@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.function.Function;
+import java.util.function.Predicate;
 
 
 @ApiStatus.Internal
@@ -162,6 +163,13 @@ public class GeneralUtils {
     }
 
     public static MutableText cloneTransformText(Text input, Function<MutableText, MutableText> transform) {
+        return cloneTransformText(input, transform, text -> true);
+    }
+    public static MutableText cloneTransformText(Text input, Function<MutableText, MutableText> transform, Predicate<Text> canContinue) {
+        if (!canContinue.test(input)) {
+            return input.copy();
+        }
+
         MutableText baseText;
         if (input.getContent() instanceof TranslatableTextContent translatable) {
             var obj = new ArrayList<>();
@@ -180,7 +188,7 @@ public class GeneralUtils {
         }
 
         for (var sibling : input.getSiblings()) {
-            baseText.append(cloneTransformText(sibling, transform));
+            baseText.append(cloneTransformText(sibling, transform, canContinue));
         }
 
         baseText.setStyle(input.getStyle());

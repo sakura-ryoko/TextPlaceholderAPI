@@ -6,6 +6,7 @@ import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.function.Supplier;
 
 public final class ParserContext {
     private final Map<Key<?>, Object> map = new HashMap<>();
@@ -31,6 +32,20 @@ public final class ParserContext {
         return (T) this.map.get(key);
     }
 
+    public <T> T getOrElse(Key<T> key, T defaultValue) {
+        //noinspection unchecked
+        return (T) this.map.getOrDefault(key, defaultValue);
+    }
+
+    public <T> T getOrElse(Key<T> key, Supplier<T> defaultValue) {
+        //noinspection unchecked
+        var x =  (T) this.map.get(key);
+        if (x == null) {
+            return defaultValue.get();
+        }
+        return x;
+    }
+
     public <T> T getOrThrow(Key<T> key) {
         //noinspection unchecked
         return Objects.requireNonNull((T) this.map.get(key));
@@ -41,9 +56,12 @@ public final class ParserContext {
     }
 
 
+
+
     public record Key<T>(String key, @Nullable Class<T> type) {
         public static final Key<Boolean> COMPACT_TEXT = new Key<>("compact_text", Boolean.class);
         public static final Key<RegistryWrapper.WrapperLookup> WRAPPER_LOOKUP = new Key<>("wrapper_lookup", RegistryWrapper.WrapperLookup.class);
+        public static final Key<Integer> DEFAULT_TEXT_COLOR = new Key<>("default_text_color", Integer.class);
 
         public static <T> Key<T> of(String key, T type) {
             //noinspection unchecked

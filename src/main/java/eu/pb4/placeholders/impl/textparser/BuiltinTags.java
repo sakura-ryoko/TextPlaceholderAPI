@@ -115,6 +115,43 @@ public final class BuiltinTags {
                             })
             );
         }
+
+        {
+            TagRegistry.registerDefault(
+                    TextTag.enclosing(
+                            "shadow",
+                            List.of("shadow_color"),
+                            "color",
+                            false,
+                            (nodes, data, parser) -> {
+                                try {
+                                    if (data.contains("scale") && data.size() == 1) {
+                                        return new ColorBasedShadowNode(nodes, Float.parseFloat(data.get("scale", "0")));
+                                    }
+
+                                    var color = data.get("value", 0);
+                                    if (color == null) {
+                                        return new ColorBasedShadowNode(nodes);
+                                    }
+
+                                    int value;
+                                    if (color.startsWith("#")) {
+                                        value = Integer.parseUnsignedInt(color.substring(1), 16);
+                                        if (color.length() == 7) {
+                                            value = (value & 0xFFFFFF) | 0xFF000000;
+                                        }
+                                    } else {
+                                        value = TextColor.parse(color).getOrThrow().getRgb() | 0xFF000000;
+                                    }
+
+
+                                    return new ShadowNode(nodes, value);
+                                } catch (Throwable e) {
+                                    return new ParentNode(nodes);
+                                }
+                            })
+            );
+        }
         {
             TagRegistry.registerDefault(
                     TextTag.enclosing(
