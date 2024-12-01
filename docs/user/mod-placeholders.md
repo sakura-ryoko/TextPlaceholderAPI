@@ -107,6 +107,9 @@ These placeholders are provided by other mods. Some are build in directly, while
 - `%playerpronouns:raw_pronouns%` / `%playerpronouns:raw_pronouns [default]%` - Displays player's pronouns as raw text, or `default` if
   unset. This allows text formatting to be embedded into the pronouns.
 
+### [Solstice Essentials](https://solstice.alexdevs.me)
+- `%solstice:afk%` - Displays the AFK tag when the player is away from keyboard, configurable via the config.
+
 ### [Spark](https://spark.lucko.me/download)
 
 - `%spark:tps%` / `%spark:tps duration%` - Shows server TPS. `duration` can be `5s`, `10s`, `1m`, `5m`, or `15m`. Shows all durations if
@@ -143,3 +146,4 @@ These placeholders are provided by other mods. Some are build in directly, while
 *[MSPT]: Milliseconds Per Tick. The number of milliseconds it takes for a tick on the server. >50 MSPT means the server is lagging.
 *[UUID]: UUIDs are used by minecraft to identify players and entities
 *[UUIDs]: UUIDs are used by minecraft to identify players and entities
+

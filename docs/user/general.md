@@ -47,3 +47,8 @@ and [placeholders from mods here](/user/mod-placeholders).
 - Fuji -
   [Modrinth](https://modrinth.com/mod/fuji),
   [Github](https://github.com/sakurawald/fuji-fabric/)
+
+- Solstice Essentials -
+  [CurseForge](https://www.curseforge.com/minecraft/mc-mods/solstice),
+  [Modrinth](https://modrinth.com/mod/solstice-essentials),
+  [Github](https://github.com/Ale32bit/Solstice)
