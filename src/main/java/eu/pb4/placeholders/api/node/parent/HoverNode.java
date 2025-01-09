@@ -46,7 +46,7 @@ public final class HoverNode<T, H> extends SimpleStylingNode {
                 return Style.EMPTY;
             }
 
-            return Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, ((LazyItemStackNodeContent) this.value).toVanilla(wrapper)));
+            return Style.EMPTY.withHoverEvent(new HoverEvent.ShowItem(((LazyItemStackNodeContent) this.value).toVanilla(wrapper)));
         } else {
             return Style.EMPTY.withHoverEvent(new HoverEvent((HoverEvent.Action<Object>) this.action.vanillaType(), this.value));
         }
