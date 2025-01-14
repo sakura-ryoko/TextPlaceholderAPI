@@ -1,5 +1,6 @@
 package eu.pb4.placeholders.api.node.parent;
 
+import java.net.URI;
 import eu.pb4.placeholders.api.node.TextNode;
 import eu.pb4.placeholders.api.ParserContext;
 import eu.pb4.placeholders.api.parsers.NodeParser;
@@ -25,11 +26,30 @@ public final class StyledNode extends SimpleStylingNode {
         var style = this.style;
 
         if (hoverValue != null && style.getHoverEvent() != null && style.getHoverEvent().getAction() == HoverEvent.Action.SHOW_TEXT) {
-            style = style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, this.hoverValue.toText(context, true)));
+            style = style.withHoverEvent(new HoverEvent.ShowText(this.hoverValue.toText(context, true)));
         }
 
         if (clickValue != null && style.getClickEvent() != null) {
-            style = style.withClickEvent(new ClickEvent(style.getClickEvent().getAction(), this.clickValue.toText(context, true).getString()));
+            String node = this.clickValue.toText(context, true).getString();
+            switch (style.getClickEvent().getAction()) {
+                case OPEN_URL -> {
+                    try {
+                        style = style.withClickEvent(new ClickEvent.OpenUrl(URI.create(node)));
+                    } catch (Exception e) {
+                        // NO-OP
+                    }
+                } case CHANGE_PAGE -> {
+                    try {
+                        style = style.withClickEvent(new ClickEvent.ChangePage(Integer.parseInt(node)));
+                    } catch (Exception e) {
+                        // NO-OP
+                    }
+                }
+                case OPEN_FILE -> style = style.withClickEvent(new ClickEvent.OpenFile(node));
+				case RUN_COMMAND -> style = style.withClickEvent(new ClickEvent.RunCommand(node));
+				case SUGGEST_COMMAND -> style = style.withClickEvent(new ClickEvent.SuggestCommand(node));
+				case COPY_TO_CLIPBOARD -> style = style.withClickEvent(new ClickEvent.CopyToClipboard(node));
+            }
         }
 
         if (insertion != null) {

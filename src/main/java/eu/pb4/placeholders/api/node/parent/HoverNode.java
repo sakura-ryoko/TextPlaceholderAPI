@@ -33,9 +33,9 @@ public final class HoverNode<T, H> extends SimpleStylingNode {
     @Override
     protected Style style(ParserContext context) {
         if (this.action == Action.TEXT) {
-            return Style.EMPTY.withHoverEvent(new HoverEvent((HoverEvent.Action<Object>) this.action.vanillaType(), ((TextNode) this.value).toText(context, true)));
+            return Style.EMPTY.withHoverEvent(new HoverEvent.ShowText(((TextNode) this.value).toText(context, true)));
         } else if (this.action == Action.ENTITY) {
-            return Style.EMPTY.withHoverEvent(new HoverEvent((HoverEvent.Action<Object>) this.action.vanillaType(), ((EntityNodeContent) this.value).toVanilla(context)));
+            return Style.EMPTY.withHoverEvent(new HoverEvent.ShowEntity(((EntityNodeContent) this.value).toVanilla(context)));
         } else if (this.action == Action.LAZY_ITEM_STACK) {
             RegistryWrapper.WrapperLookup wrapper;
             if (context.contains(ParserContext.Key.WRAPPER_LOOKUP)) {
@@ -46,25 +46,25 @@ public final class HoverNode<T, H> extends SimpleStylingNode {
                 return Style.EMPTY;
             }
 
-            return Style.EMPTY.withHoverEvent(new HoverEvent.ShowItem(((LazyItemStackNodeContent) this.value).toVanilla(wrapper)));
+            return Style.EMPTY.withHoverEvent(new HoverEvent.ShowItem(((LazyItemStackNodeContent<?>) this.value).toVanilla(wrapper)));
         } else {
-            return Style.EMPTY.withHoverEvent(new HoverEvent((HoverEvent.Action<Object>) this.action.vanillaType(), this.value));
+            return Style.EMPTY;
         }
 
     }
 
     @Override
     public ParentTextNode copyWith(TextNode[] children) {
-        return new HoverNode(children, this.action, this.value);
+        return new HoverNode<>(children, this.action, this.value);
     }
 
     @Override
     public ParentTextNode copyWith(TextNode[] children, NodeParser parser) {
         if (this.action == Action.TEXT) {
-            return new HoverNode(children, Action.TEXT, parser.parseNode((TextNode) this.value));
+            return new HoverNode<>(children, Action.TEXT, parser.parseNode((TextNode) this.value));
         } else if (this.action == Action.ENTITY && ((EntityNodeContent) this.value).name != null) {
             var val = ((EntityNodeContent) this.value);
-            return new HoverNode(children, Action.ENTITY, new EntityNodeContent(val.entityType, val.uuid, parser.parseNode(val.name)));
+            return new HoverNode<>(children, Action.ENTITY, new EntityNodeContent(val.entityType, val.uuid, parser.parseNode(val.name)));
         }
         return this.copyWith(children);
     }
@@ -90,26 +90,48 @@ public final class HoverNode<T, H> extends SimpleStylingNode {
         return (this.action == Action.TEXT && ((TextNode) this.value).isDynamic()) || (this.action == Action.ENTITY && ((EntityNodeContent) this.value).name.isDynamic()) || this.action == Action.LAZY_ITEM_STACK;
     }
 
-    public record Action<T, H>(HoverEvent.Action<H> vanillaType) {
+    public record Action<T, H>(HoverEvent.Action vanillaType) {
         public static final Action<EntityNodeContent, HoverEvent.EntityContent> ENTITY = new Action<>(HoverEvent.Action.SHOW_ENTITY);
         public static final Action<TextNode, Text> TEXT = new Action<>(HoverEvent.Action.SHOW_TEXT);
 
-        public static final Action<HoverEvent.ItemStackContent, HoverEvent.ItemStackContent> ITEM_STACK = new Action<>(HoverEvent.Action.SHOW_ITEM);
-        public static final Action<LazyItemStackNodeContent, HoverEvent.ItemStackContent> LAZY_ITEM_STACK = new Action<>(HoverEvent.Action.SHOW_ITEM);
+        public static final Action<HoverEvent.ShowItem, HoverEvent.ShowItem> ITEM_STACK = new Action<>(HoverEvent.Action.SHOW_ITEM);
+        public static final Action<LazyItemStackNodeContent<?>, HoverEvent.ShowItem> LAZY_ITEM_STACK = new Action<>(HoverEvent.Action.SHOW_ITEM);
     }
 
-    public record EntityNodeContent(EntityType<?>entityType, UUID uuid, @Nullable TextNode name) {
+    public static class EntityNodeContent {
+        public EntityType<?> entityType;
+        public UUID uuid;
+        public @Nullable TextNode name;
+
+        public EntityNodeContent(EntityType<?> entityType, UUID uuid, @Nullable TextNode name) {
+            this.entityType = entityType;
+            this.uuid = uuid;
+            this.name = name;
+        }
+
         public HoverEvent.EntityContent toVanilla(ParserContext context) {
             return new HoverEvent.EntityContent(this.entityType, this.uuid, this.name != null ? this.name.toText(context, true) : null);
         }
     }
 
-    public record LazyItemStackNodeContent<T>(Identifier identifier, int count, DynamicOps<T> ops, T componentMap) {
-        public HoverEvent.ItemStackContent toVanilla(RegistryWrapper.WrapperLookup lookup) {
+    public static class LazyItemStackNodeContent<T> {
+        public Identifier identifier;
+        public int count;
+        public DynamicOps<T> ops;
+        public T componentMap;
+
+        public LazyItemStackNodeContent(Identifier identifier, int count, DynamicOps<T> ops, T componentMap) {
+            this.identifier = identifier;
+            this.count = count;
+            this.ops = ops;
+            this.componentMap = componentMap;
+        }
+
+        public ItemStack toVanilla(RegistryWrapper.WrapperLookup lookup) {
             var stack = new ItemStack(lookup.getOrThrow(RegistryKeys.ITEM).getOrThrow(RegistryKey.of(RegistryKeys.ITEM, identifier)));
             stack.setCount(count);
             stack.applyChanges(ComponentChanges.CODEC.decode(lookup.getOps(ops), componentMap).getOrThrow().getFirst());
-            return new HoverEvent.ItemStackContent(stack);
+            return stack;
         }
     }
 }

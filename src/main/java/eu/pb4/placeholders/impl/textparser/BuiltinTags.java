@@ -226,6 +226,8 @@ public final class BuiltinTags {
                     (data) -> new KeybindNode(data.getNext("value", ""))));
         }
 
+        // Not useful & broken
+        /*
         {
             TagRegistry.registerDefault(TextTag.enclosing("click", "click_action", false,
                     (nodes, data, parser) -> {
@@ -241,6 +243,7 @@ public final class BuiltinTags {
                         return new ParentNode(nodes);
                     }));
         }
+         */
 
         {
             TagRegistry.registerDefault(
@@ -251,7 +254,7 @@ public final class BuiltinTags {
                             false,
                             (nodes, data, parser) -> {
                                 if (!data.isEmpty()) {
-                                    return new ClickActionNode(nodes, ClickEvent.Action.RUN_COMMAND, parser.parseNode(data.get("value", 0)));
+                                    return new ClickActionNode(nodes, ClickActionNode.Action.RUN_COMMAND, parser.parseNode(data.get("value", 0)));
                                 }
                                 return new ParentNode(nodes);
                             }
@@ -269,7 +272,7 @@ public final class BuiltinTags {
                             (nodes, data, parser) -> {
 
                                 if (!data.isEmpty()) {
-                                    return new ClickActionNode(nodes, ClickEvent.Action.SUGGEST_COMMAND, parser.parseNode(data.getNext("value", "")));
+                                    return new ClickActionNode(nodes, ClickActionNode.Action.SUGGEST_COMMAND, parser.parseNode(data.getNext("value", "")));
                                 }
                                 return new ParentNode(nodes);
                             }
@@ -286,7 +289,7 @@ public final class BuiltinTags {
                             false, (nodes, data, parser) -> {
 
                                 if (!data.isEmpty()) {
-                                    return new ClickActionNode(nodes, ClickEvent.Action.OPEN_URL, parser.parseNode(data.get("value", 0)));
+                                    return new ClickActionNode(nodes, ClickActionNode.Action.OPEN_URL, parser.parseNode(data.get("value", 0)));
                                 }
                                 return new ParentNode(nodes);
                             }
@@ -304,7 +307,7 @@ public final class BuiltinTags {
                             (nodes, data, parser) -> {
 
                                 if (!data.isEmpty()) {
-                                    return new ClickActionNode(nodes, ClickEvent.Action.COPY_TO_CLIPBOARD, parser.parseNode(data.get("value", 0)));
+                                    return new ClickActionNode(nodes, ClickActionNode.Action.COPY_TO_CLIPBOARD, parser.parseNode(data.get("value", 0)));
                                 }
                                 return new ParentNode(nodes);
                             }
@@ -320,7 +323,7 @@ public final class BuiltinTags {
                             "click_action",
                             true, (nodes, data, parser) -> {
                                 if (!data.isEmpty()) {
-                                    return new ClickActionNode(nodes, ClickEvent.Action.CHANGE_PAGE, parser.parseNode(data.get("value", 0)));
+                                    return new ClickActionNode(nodes, ClickActionNode.Action.CHANGE_PAGE, parser.parseNode(data.get("value", 0)));
                                 }
                                 return new ParentNode(nodes);
                             }));
@@ -348,11 +351,11 @@ public final class BuiltinTags {
                                         } else if (type.equals("show_entity") || type.equals("entity")) {
                                             return new HoverNode<>(nodes,
                                                     HoverNode.Action.ENTITY,
-                                                    new HoverNode.EntityNodeContent(
-                                                            EntityType.get(data.getNext("entity", "")).orElse(EntityType.PIG),
-                                                            UUID.fromString(data.getNext("uuid", Util.NIL_UUID.toString())),
-                                                            new ParentNode(parser.parseNode(data.get("name", 3, "")))
-                                                    ));
+																   new HoverNode.EntityNodeContent(
+																		   EntityType.get(data.getNext("entity", "")).orElse(EntityType.PIG),
+																		   UUID.fromString(data.getNext("uuid", Util.NIL_UUID.toString())),
+																		   new ParentNode(parser.parseNode(data.get("name", 3, "")))
+																   ));
                                         } else if (type.equals("show_item") || type.equals("item")) {
                                             var value = data.getNext("value", "");
                                             try {

@@ -8,10 +8,12 @@ import net.minecraft.item.ItemStack;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.ApiStatus;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
 
@@ -44,8 +46,8 @@ public class GeneralUtils {
     public static boolean isEmpty(Text text) {
         return (
                 text.getContent() == PlainTextContent.EMPTY
-                || (text.getContent() instanceof PlainTextContent.Literal l && l.string().isEmpty())
-               ) && text.getSiblings().isEmpty();
+                        || (text.getContent() instanceof PlainTextContent.Literal l && l.string().isEmpty())
+        ) && text.getSiblings().isEmpty();
     }
 
     public static MutableText toGradient(Text base, GradientNode.GradientProvider posToColor) {
@@ -165,6 +167,7 @@ public class GeneralUtils {
     public static MutableText cloneTransformText(Text input, Function<MutableText, MutableText> transform) {
         return cloneTransformText(input, transform, text -> true);
     }
+
     public static MutableText cloneTransformText(Text input, Function<MutableText, MutableText> transform, Predicate<Text> canContinue) {
         if (!canContinue.test(input)) {
             return input.copy();
@@ -206,7 +209,7 @@ public class GeneralUtils {
                 mutableText.formatted(stack.getRarity().getFormatting());
             }
             mutableText.styled((style) -> {
-                return style.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_ITEM, new HoverEvent.ItemStackContent(stack)));
+                return style.withHoverEvent(new HoverEvent.ShowItem(stack));
             });
 
             return mutableText;
@@ -253,14 +256,60 @@ public class GeneralUtils {
             return new ParentNode(list);
         } else {
             var style = input.getStyle();
-            var hoverValue = style.getHoverEvent() != null && style.getHoverEvent().getAction() == HoverEvent.Action.SHOW_TEXT
-                    ? convertToNodes(style.getHoverEvent().getValue(HoverEvent.Action.SHOW_TEXT)) : null;
-
-            var clickValue = style.getClickEvent() != null ? new LiteralNode(style.getClickEvent().getValue()) : null;
+            //var hoverValue = style.getHoverEvent() != null && style.getHoverEvent().getAction() == HoverEvent.Action.SHOW_TEXT
+            var hoverValue = style.getHoverEvent() != null ? convertToNodes(Objects.requireNonNull(getHoverValue(style))) : null;
+            var clickValue = style.getClickEvent() != null ? (TextNode) getClickValue(style) : null;
             var insertion = style.getInsertion() != null ? new LiteralNode(style.getInsertion()) : null;
 
             return new StyledNode(list.toArray(new TextNode[0]), style, hoverValue, clickValue, insertion);
         }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static <T> T getHoverValue(Style style)
+    {
+        if (style.getHoverEvent() != null) {
+            switch (style.getHoverEvent().getAction()) {
+                case SHOW_TEXT -> {
+                    return (T) ((HoverEvent.ShowText) style.getHoverEvent()).text();
+                }
+                case SHOW_ITEM -> {
+                    return (T) ((HoverEvent.ShowItem) style.getHoverEvent()).item();
+                }
+                case SHOW_ENTITY -> {
+                    return (T) ((HoverEvent.ShowEntity) style.getHoverEvent()).entity();
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static @Nullable Object getClickValue(Style style) {
+        if (style.getClickEvent() != null) {
+            switch (style.getClickEvent().getAction()) {
+                case CHANGE_PAGE -> {
+                    return ((ClickEvent.ChangePage) style.getClickEvent()).page();
+                }
+                case COPY_TO_CLIPBOARD -> {
+                    return ((ClickEvent.CopyToClipboard) style.getClickEvent()).value();
+                }
+                case OPEN_FILE -> {
+                    return ((ClickEvent.OpenFile) style.getClickEvent()).file();
+                }
+                case OPEN_URL -> {
+                    return ((ClickEvent.OpenUrl) style.getClickEvent()).uri();
+                }
+                case RUN_COMMAND -> {
+                    return ((ClickEvent.RunCommand) style.getClickEvent()).command();
+                }
+                case SUGGEST_COMMAND -> {
+                    return ((ClickEvent.SuggestCommand) style.getClickEvent()).command();
+                }
+            }
+        }
+
+        return null;
     }
 
     public static TextNode removeColors(TextNode node) {
@@ -290,7 +339,8 @@ public class GeneralUtils {
     public record Pair<L, R>(L left, R right) {
     }
 
-    public record MutableTransformer(Function<Style, Style> textMutableTextFunction) implements Function<MutableText, Text> {
+    public record MutableTransformer(
+            Function<Style, Style> textMutableTextFunction) implements Function<MutableText, Text> {
         public static final MutableTransformer CLEAR = new MutableTransformer(x -> Style.EMPTY);
 
         @Override
