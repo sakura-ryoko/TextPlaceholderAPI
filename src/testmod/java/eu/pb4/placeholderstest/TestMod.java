@@ -112,6 +112,16 @@ public class TestMod implements ModInitializer {
         return 0;
     }
 
+    private static int markqt(CommandContext<ServerCommandSource> context) {
+        try {
+            ServerPlayerEntity player = context.getSource().getPlayer();
+            player.sendMessage(NodeParser.builder().markdown().quickText().build().parseText(context.getArgument("text", String.class), ParserContext.of()), false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return 0;
+    }
+
     private static int test2(CommandContext<ServerCommandSource> context) {
         try {
             ServerPlayerEntity player = context.getSource().getPlayer();
@@ -332,6 +342,10 @@ public class TestMod implements ModInitializer {
 
             dispatcher.register(
                     literal("test8").then(argument("text", StringArgumentType.greedyString()).executes(TestMod::test8))
+            );
+
+            dispatcher.register(
+                    literal("markqt").then(argument("text", StringArgumentType.greedyString()).executes(TestMod::markqt))
             );
 
         });
