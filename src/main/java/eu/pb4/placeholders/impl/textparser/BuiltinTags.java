@@ -359,7 +359,7 @@ public final class BuiltinTags {
                                         } else if (type.equals("show_item") || type.equals("item")) {
                                             var value = data.getNext("value", "");
                                             try {
-                                                var nbt = StringNbtReader.parse(value);
+                                                var nbt = StringNbtReader.readCompound(value);
                                                 var id = Identifier.of(nbt.getString("id"));
                                                 var count = nbt.contains("count") ? nbt.getInt("count") : 1;
 

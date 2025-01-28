@@ -322,7 +322,7 @@ public final class TextTagsV1 {
                                             try {
                                                 return out.value(new HoverNode<>(out.nodes(),
                                                         HoverNode.Action.ITEM_STACK,
-                                                        new HoverEvent.ShowItem(ItemStack.fromNbtOrEmpty(DynamicRegistryManager.EMPTY, StringNbtReader.parse(restoreOriginalEscaping(cleanArgument(lines[1])))))
+                                                        new HoverEvent.ShowItem(ItemStack.fromNbtOrEmpty(DynamicRegistryManager.EMPTY, StringNbtReader.readCompound(restoreOriginalEscaping(cleanArgument(lines[1])))))
                                                 ));
                                             } catch (Throwable e) {
                                                 lines = lines[1].split(":", 2);

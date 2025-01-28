@@ -271,14 +271,16 @@ public class GeneralUtils {
         if (style.getHoverEvent() != null) {
             switch (style.getHoverEvent().getAction()) {
                 case SHOW_TEXT -> {
-                    return (T) ((HoverEvent.ShowText) style.getHoverEvent()).text();
+                    return (T) ((HoverEvent.ShowText) style.getHoverEvent()).value();
                 }
+                /*
                 case SHOW_ITEM -> {
                     return (T) ((HoverEvent.ShowItem) style.getHoverEvent()).item();
                 }
                 case SHOW_ENTITY -> {
                     return (T) ((HoverEvent.ShowEntity) style.getHoverEvent()).entity();
                 }
+                 */
             }
         }
 
@@ -288,18 +290,22 @@ public class GeneralUtils {
     private static @Nullable Object getClickValue(Style style) {
         if (style.getClickEvent() != null) {
             switch (style.getClickEvent().getAction()) {
+                /*
                 case CHANGE_PAGE -> {
                     return ((ClickEvent.ChangePage) style.getClickEvent()).page();
                 }
+                 */
                 case COPY_TO_CLIPBOARD -> {
                     return ((ClickEvent.CopyToClipboard) style.getClickEvent()).value();
                 }
+                /*
                 case OPEN_FILE -> {
                     return ((ClickEvent.OpenFile) style.getClickEvent()).file();
                 }
                 case OPEN_URL -> {
                     return ((ClickEvent.OpenUrl) style.getClickEvent()).uri();
                 }
+                 */
                 case RUN_COMMAND -> {
                     return ((ClickEvent.RunCommand) style.getClickEvent()).command();
                 }
