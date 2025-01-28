@@ -257,6 +257,7 @@ public class GeneralUtils {
         } else {
             var style = input.getStyle();
             //var hoverValue = style.getHoverEvent() != null && style.getHoverEvent().getAction() == HoverEvent.Action.SHOW_TEXT
+            // FIXME
             var hoverValue = style.getHoverEvent() != null ? convertToNodes(Objects.requireNonNull(getHoverValue(style))) : null;
             var clickValue = style.getClickEvent() != null ? (TextNode) getClickValue(style) : null;
             var insertion = style.getInsertion() != null ? new LiteralNode(style.getInsertion()) : null;
