@@ -365,7 +365,7 @@ public final class BuiltinTags {
 
                                                 var comps = nbt.getCompound("components");
                                                 return new HoverNode<>(nodes,
-                                                        HoverNode.Action.LAZY_ITEM_STACK,
+                                                        HoverNode.Action.ITEM_STACK,
                                                         new HoverNode.LazyItemStackNodeContent<>(id, count, NbtOps.INSTANCE, comps));
                                             } catch (Throwable ignored) {}
                                             try {
@@ -377,7 +377,7 @@ public final class BuiltinTags {
                                                 }
 
                                                 return new HoverNode<>(nodes,
-                                                        HoverNode.Action.LAZY_ITEM_STACK,
+                                                        HoverNode.Action.ITEM_STACK,
                                                         new HoverNode.LazyItemStackNodeContent<>(item, count,
                                                                 StringArgOps.INSTANCE, Either.right(data.getNestedOrEmpty("components")))
                                                 );

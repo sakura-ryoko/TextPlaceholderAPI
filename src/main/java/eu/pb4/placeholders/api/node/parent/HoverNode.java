@@ -1,10 +1,14 @@
 package eu.pb4.placeholders.api.node.parent;
 
-import com.mojang.serialization.DynamicOps;
+import java.util.Arrays;
+import java.util.UUID;
 import eu.pb4.placeholders.api.ParserContext;
 import eu.pb4.placeholders.api.PlaceholderContext;
 import eu.pb4.placeholders.api.node.TextNode;
 import eu.pb4.placeholders.api.parsers.NodeParser;
+import org.jetbrains.annotations.Nullable;
+
+import com.mojang.serialization.DynamicOps;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
@@ -13,31 +17,37 @@ import net.minecraft.registry.RegistryKeys;
 import net.minecraft.registry.RegistryWrapper;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Style;
-import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
-import java.util.UUID;
-
-public final class HoverNode<T, H> extends SimpleStylingNode {
-    private final Action<T, H> action;
+public final class HoverNode<T> extends SimpleStylingNode {
+    private final Action action;
     private final T value;
 
-    public HoverNode(TextNode[] children, Action<T, H> action, T value) {
+    public HoverNode(TextNode[] children, Action action, T value) {
         super(children);
         this.action = action;
         this.value = value;
     }
 
+    public Action action() {
+        return this.action;
+    }
+
+    public T value() {
+        return this.value;
+    }
+
+    @SuppressWarnings("unchecked")
     @Override
     protected Style style(ParserContext context) {
+        RegistryWrapper.WrapperLookup wrapper;
+
         if (this.action == Action.TEXT) {
             return Style.EMPTY.withHoverEvent(new HoverEvent.ShowText(((TextNode) this.value).toText(context, true)));
         } else if (this.action == Action.ENTITY) {
+            // FIXME (Not Working)
             return Style.EMPTY.withHoverEvent(new HoverEvent.ShowEntity(((EntityNodeContent) this.value).toVanilla(context)));
-        } else if (this.action == Action.LAZY_ITEM_STACK) {
-            RegistryWrapper.WrapperLookup wrapper;
+        } else if (this.action == Action.ITEM_STACK) {
             if (context.contains(ParserContext.Key.WRAPPER_LOOKUP)) {
                 wrapper = context.getOrThrow(ParserContext.Key.WRAPPER_LOOKUP);
             } else if (context.contains(PlaceholderContext.KEY)) {
@@ -46,7 +56,8 @@ public final class HoverNode<T, H> extends SimpleStylingNode {
                 return Style.EMPTY;
             }
 
-            return Style.EMPTY.withHoverEvent(new HoverEvent.ShowItem(((LazyItemStackNodeContent<?>) this.value).toVanilla(wrapper)));
+            // FIXME (Not Working)
+            return Style.EMPTY.withHoverEvent(new HoverEvent.ShowItem(((LazyItemStackNodeContent<T>) this.value).toVanilla(wrapper)));
         } else {
             return Style.EMPTY;
         }
@@ -69,14 +80,6 @@ public final class HoverNode<T, H> extends SimpleStylingNode {
         return this.copyWith(children);
     }
 
-    public Action<T, H> action() {
-        return this.action;
-    }
-
-    public T value() {
-        return this.value;
-    }
-
     @Override
     public String toString() {
         return "HoverNode{" +
@@ -87,23 +90,34 @@ public final class HoverNode<T, H> extends SimpleStylingNode {
 
     @Override
     public boolean isDynamicNoChildren() {
-        return (this.action == Action.TEXT && ((TextNode) this.value).isDynamic()) || (this.action == Action.ENTITY && ((EntityNodeContent) this.value).name.isDynamic()) || this.action == Action.LAZY_ITEM_STACK;
+        return (this.action == Action.TEXT && ((TextNode) this.value).isDynamic()) || (this.action == Action.ENTITY && ((EntityNodeContent) this.value).name.isDynamic()) || this.action == Action.ITEM_STACK;
     }
 
-    public record Action<T, H>(HoverEvent.Action vanillaType) {
+    // FIXME (Only the Hover Text is working; show_entity and show_item are busted)
+    public record Action(HoverEvent.Action vanillaType) {
+        public static final Action TEXT = new Action(HoverEvent.Action.SHOW_TEXT);
+        // FIXME (Not Working)
+        public static final Action ENTITY = new Action(HoverEvent.Action.SHOW_ENTITY);
+        // FIXME (Not Working)
+        public static final Action ITEM_STACK = new Action(HoverEvent.Action.SHOW_ITEM);
+
+        // FIXME (Not Working)
+        /*
         public static final Action<EntityNodeContent, HoverEvent.EntityContent> ENTITY = new Action<>(HoverEvent.Action.SHOW_ENTITY);
         public static final Action<TextNode, Text> TEXT = new Action<>(HoverEvent.Action.SHOW_TEXT);
 
         public static final Action<HoverEvent.ShowItem, HoverEvent.ShowItem> ITEM_STACK = new Action<>(HoverEvent.Action.SHOW_ITEM);
         public static final Action<LazyItemStackNodeContent<?>, HoverEvent.ShowItem> LAZY_ITEM_STACK = new Action<>(HoverEvent.Action.SHOW_ITEM);
+         */
     }
 
+    // FIXME (Not Working)
     public static class EntityNodeContent {
         public EntityType<?> entityType;
         public UUID uuid;
         public @Nullable TextNode name;
 
-        public EntityNodeContent(EntityType<?> entityType, UUID uuid, @Nullable TextNode name) {
+        public EntityNodeContent(EntityType<?> entityType, UUID uuid , @Nullable TextNode name) {
             this.entityType = entityType;
             this.uuid = uuid;
             this.name = name;
@@ -114,6 +128,7 @@ public final class HoverNode<T, H> extends SimpleStylingNode {
         }
     }
 
+    // FIXME (Not Working)
     public static class LazyItemStackNodeContent<T> {
         public Identifier identifier;
         public int count;
