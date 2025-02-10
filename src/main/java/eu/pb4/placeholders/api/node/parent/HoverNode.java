@@ -111,7 +111,7 @@ public final class HoverNode<T> extends SimpleStylingNode {
          */
     }
 
-    // FIXME (Not Working)
+    // FIXME (Not Working) -- May need to implement your own MapCodec<> ... But how to convert a 'TextNode' CODEC object to it and then render a tooltip? :/
     public static class EntityNodeContent {
         public EntityType<?> entityType;
         public UUID uuid;
@@ -128,7 +128,7 @@ public final class HoverNode<T> extends SimpleStylingNode {
         }
     }
 
-    // FIXME (Not Working)
+    // FIXME (Not Working) -- May need to implement your own MapCodec<> that wraps in the ItemStack.CODEC, and applies the tooltips for it using the wrapper lookup :/
     public static class LazyItemStackNodeContent<T> {
         public Identifier identifier;
         public int count;
