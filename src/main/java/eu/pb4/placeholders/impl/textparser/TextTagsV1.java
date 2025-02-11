@@ -306,12 +306,16 @@ public final class TextTagsV1 {
                                     if (lines.length > 1) {
                                         HoverEvent.Action action = HoverEvent.Action.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString(cleanArgument(lines[0].toLowerCase(Locale.ROOT)))).result().orElse(null);
                                         if (action == HoverEvent.Action.SHOW_TEXT) {
-                                            return out.value(new HoverNode<>(out.nodes(), HoverNode.Action.TEXT, new ParentNode(parse(restoreOriginalEscaping(cleanArgument(lines[1])), handlers))));
+                                            return out.value(new HoverNode<TextNode, HoverEvent.ShowText>(out.nodes(),
+                                                                             HoverNode.Action.TEXT,
+                                                                                     new ParentNode(parse(restoreOriginalEscaping(cleanArgument(lines[1])), handlers)
+                                                                             )
+                                            ));
                                         } else if (action == HoverEvent.Action.SHOW_ENTITY) {
                                             lines = lines[1].split(":", 3);
                                             if (lines.length == 3) {
-                                                return out.value(new HoverNode<>(out.nodes(),
-                                                        HoverNode.Action.ENTITY,
+                                                return out.value(new HoverNode<HoverNode.EntityNodeContent, HoverEvent.ShowEntity>(out.nodes(),
+                                                                                 HoverNode.Action.ENTITY,
 																				 new HoverNode.EntityNodeContent(
 																						 EntityType.get(restoreOriginalEscaping(restoreOriginalEscaping(cleanArgument(lines[0])))).orElse(EntityType.PIG),
 																						 UUID.fromString(cleanArgument(lines[1])),
@@ -320,9 +324,13 @@ public final class TextTagsV1 {
                                             }
                                         } else if (action == HoverEvent.Action.SHOW_ITEM) {
                                             try {
-                                                return out.value(new HoverNode<>(out.nodes(),
-                                                        HoverNode.Action.ITEM_STACK,
-                                                        new HoverEvent.ShowItem(ItemStack.fromNbtOrEmpty(DynamicRegistryManager.EMPTY, StringNbtReader.readCompound(restoreOriginalEscaping(cleanArgument(lines[1])))))
+                                                return out.value(new HoverNode<HoverEvent.ShowItem, HoverEvent.ShowItem>(out.nodes(),
+                                                        HoverNode.Action.VANILLA_ITEM,
+                                                        new HoverEvent.ShowItem(
+                                                                // FIXME, you cannot pass Dynamic.EMPTY here; it will always throw
+                                                                ItemStack.fromNbtOrEmpty(DynamicRegistryManager.EMPTY,
+                                                                StringNbtReader.readCompound(restoreOriginalEscaping(cleanArgument(lines[1]))))
+                                                        )
                                                 ));
                                             } catch (Throwable e) {
                                                 lines = lines[1].split(":", 2);
@@ -333,17 +341,25 @@ public final class TextTagsV1 {
                                                         stack.setCount(Integer.parseInt(lines[1]));
                                                     }
 
-                                                    return out.value(new HoverNode<>(out.nodes(),
-                                                            HoverNode.Action.ITEM_STACK,
+                                                    return out.value(new HoverNode<HoverEvent.ShowItem, HoverEvent.ShowItem>(out.nodes(),
+                                                            HoverNode.Action.VANILLA_ITEM,
                                                             new HoverEvent.ShowItem(stack)
                                                     ));
                                                 }
                                             }
                                         } else {
-                                            return out.value(new HoverNode<>(out.nodes(), HoverNode.Action.TEXT, new ParentNode(parse(restoreOriginalEscaping(cleanArgument(data)), handlers))));
+                                            return out.value(new HoverNode<TextNode, HoverEvent.ShowText>(out.nodes(),
+                                                                             HoverNode.Action.TEXT,
+                                                                                     new ParentNode(parse(restoreOriginalEscaping(cleanArgument(data)), handlers)
+                                                                             )
+                                            ));
                                         }
                                     } else {
-                                        return out.value(new HoverNode<>(out.nodes(), HoverNode.Action.TEXT, new ParentNode(parse(restoreOriginalEscaping(cleanArgument(data)), handlers))));
+                                        return out.value(new HoverNode<TextNode, HoverEvent.ShowText>(out.nodes(),
+                                                                         HoverNode.Action.TEXT,
+                                                                                 new ParentNode(parse(restoreOriginalEscaping(cleanArgument(data)), handlers)
+                                                                         )
+                                        ));
                                     }
                                 } catch (Exception e) {
                                     // Shut

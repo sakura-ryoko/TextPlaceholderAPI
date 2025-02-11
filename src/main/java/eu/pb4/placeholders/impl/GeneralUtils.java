@@ -4,19 +4,17 @@ import eu.pb4.placeholders.api.node.*;
 import eu.pb4.placeholders.api.node.parent.*;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.component.DataComponentTypes;
+import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.function.Function;
 import java.util.function.Predicate;
-
 
 @ApiStatus.Internal
 public class GeneralUtils {
@@ -257,8 +255,8 @@ public class GeneralUtils {
         } else {
             var style = input.getStyle();
             //var hoverValue = style.getHoverEvent() != null && style.getHoverEvent().getAction() == HoverEvent.Action.SHOW_TEXT
-            // FIXME
-            var hoverValue = style.getHoverEvent() != null ? convertToNodes(Objects.requireNonNull(getHoverValue(style))) : null;
+                    // ? convertToNodes(style.getHoverEvent().getValue(HoverEvent.Action.SHOW_TEXT)) : null;
+            var hoverValue = style.getHoverEvent() != null ? convertToNodes(getHoverValue(style)) : null;
             var clickValue = style.getClickEvent() != null ? (TextNode) getClickValue(style) : null;
             var insertion = style.getInsertion() != null ? new LiteralNode(style.getInsertion()) : null;
 
@@ -266,57 +264,54 @@ public class GeneralUtils {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    private static <T> T getHoverValue(Style style)
-    {
+    private static Text getHoverValue(Style style) {
         if (style.getHoverEvent() != null) {
             switch (style.getHoverEvent().getAction()) {
                 case SHOW_TEXT -> {
-                    return (T) ((HoverEvent.ShowText) style.getHoverEvent()).value();
+                    return ((HoverEvent.ShowText) style.getHoverEvent()).value();
                 }
-                /*
                 case SHOW_ITEM -> {
-                    return (T) ((HoverEvent.ShowItem) style.getHoverEvent()).item();
+                    return ((HoverEvent.ShowItem) style.getHoverEvent()).item().toHoverableText();
                 }
                 case SHOW_ENTITY -> {
-                    return (T) ((HoverEvent.ShowEntity) style.getHoverEvent()).entity();
+                    HoverEvent.EntityContent content = ((HoverEvent.ShowEntity) style.getHoverEvent()).entity();
+                    Text result = content.name.orElseGet(content.entityType::getName);
+                    if (result != null && !result.equals(Text.empty())) {
+                        return result;
+                    }
+                    return Text.literal("id="+ EntityType.getId(content.entityType).toString());
                 }
-                 */
             }
         }
 
-        return null;
+        return Text.literal("Missing Hover Value");
     }
 
-    private static @Nullable Object getClickValue(Style style) {
+    private static Text getClickValue(Style style) {
         if (style.getClickEvent() != null) {
             switch (style.getClickEvent().getAction()) {
-                /*
                 case CHANGE_PAGE -> {
-                    return ((ClickEvent.ChangePage) style.getClickEvent()).page();
+                    return Text.literal(String.valueOf(((ClickEvent.ChangePage) style.getClickEvent()).page()));
                 }
-                 */
                 case COPY_TO_CLIPBOARD -> {
-                    return ((ClickEvent.CopyToClipboard) style.getClickEvent()).value();
+                    return Text.literal(((ClickEvent.CopyToClipboard) style.getClickEvent()).value());
                 }
-                /*
                 case OPEN_FILE -> {
-                    return ((ClickEvent.OpenFile) style.getClickEvent()).file();
+                    return Text.literal(((ClickEvent.OpenFile) style.getClickEvent()).file().getAbsolutePath());
                 }
                 case OPEN_URL -> {
-                    return ((ClickEvent.OpenUrl) style.getClickEvent()).uri();
+                    return Text.literal(((ClickEvent.OpenUrl) style.getClickEvent()).uri().getRawPath());
                 }
-                 */
                 case RUN_COMMAND -> {
-                    return ((ClickEvent.RunCommand) style.getClickEvent()).command();
+                    return Text.literal(((ClickEvent.RunCommand) style.getClickEvent()).command());
                 }
                 case SUGGEST_COMMAND -> {
-                    return ((ClickEvent.SuggestCommand) style.getClickEvent()).command();
+                    return Text.literal(((ClickEvent.SuggestCommand) style.getClickEvent()).command());
                 }
             }
         }
 
-        return null;
+        return Text.literal("Missing Click Value");
     }
 
     public static TextNode removeColors(TextNode node) {

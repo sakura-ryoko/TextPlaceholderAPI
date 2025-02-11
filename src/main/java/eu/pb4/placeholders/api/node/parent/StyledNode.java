@@ -1,11 +1,14 @@
 package eu.pb4.placeholders.api.node.parent;
 
 import java.net.URI;
-import eu.pb4.placeholders.api.node.TextNode;
 import eu.pb4.placeholders.api.ParserContext;
+import eu.pb4.placeholders.api.node.TextNode;
 import eu.pb4.placeholders.api.parsers.NodeParser;
-import net.minecraft.text.*;
 import org.jetbrains.annotations.Nullable;
+
+import net.minecraft.text.ClickEvent;
+import net.minecraft.text.HoverEvent;
+import net.minecraft.text.Style;
 
 public final class StyledNode extends SimpleStylingNode {
     private final Style style;
@@ -25,11 +28,13 @@ public final class StyledNode extends SimpleStylingNode {
     public Style style(ParserContext context) {
         var style = this.style;
 
-        if (hoverValue != null && style.getHoverEvent() != null && style.getHoverEvent().getAction() == HoverEvent.Action.SHOW_TEXT) {
-            style = style.withHoverEvent(new HoverEvent.ShowText(this.hoverValue.toText(context, true)));
+        if (this.hoverValue != null && style.getHoverEvent() != null) {
+            switch (style.getHoverEvent().getAction()) {
+                case SHOW_TEXT, SHOW_ENTITY, SHOW_ITEM -> style = style.withHoverEvent(new HoverEvent.ShowText(this.hoverValue.toText(context, true)));
+            }
         }
 
-        if (clickValue != null && style.getClickEvent() != null) {
+        if (this.clickValue != null && style.getClickEvent() != null) {
             String node = this.clickValue.toText(context, true).getString();
             switch (style.getClickEvent().getAction()) {
                 case OPEN_URL -> {
@@ -52,7 +57,7 @@ public final class StyledNode extends SimpleStylingNode {
             }
         }
 
-        if (insertion != null) {
+        if (this.insertion != null) {
             style = style.withInsertion(this.insertion.toText(context, true).getString());
         }
         return style;
