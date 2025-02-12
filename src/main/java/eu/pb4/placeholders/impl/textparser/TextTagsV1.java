@@ -7,7 +7,7 @@ import eu.pb4.placeholders.api.node.parent.*;
 import eu.pb4.placeholders.api.parsers.TextParserV1;
 import eu.pb4.placeholders.impl.GeneralUtils;
 import net.minecraft.entity.EntityType;
-import net.minecraft.item.ItemStack;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.StringNbtReader;
 import net.minecraft.registry.DynamicRegistryManager;
 import net.minecraft.registry.Registries;
@@ -188,7 +188,7 @@ public final class TextTagsV1 {
                     }));
         }
 
-        // Not useful and broken
+        // Broken
         /*
         {
             TextParserV1.registerDefault(TextParserV1.TextTag.of("click", "click_action", false, (tag, data, input, handlers, endAt) -> {
@@ -306,58 +306,53 @@ public final class TextTagsV1 {
                                     if (lines.length > 1) {
                                         HoverEvent.Action action = HoverEvent.Action.CODEC.parse(JsonOps.INSTANCE, JsonParser.parseString(cleanArgument(lines[0].toLowerCase(Locale.ROOT)))).result().orElse(null);
                                         if (action == HoverEvent.Action.SHOW_TEXT) {
-                                            return out.value(new HoverNode<TextNode, HoverEvent.ShowText>(out.nodes(),
-                                                                             HoverNode.Action.TEXT,
-                                                                                     new ParentNode(parse(restoreOriginalEscaping(cleanArgument(lines[1])), handlers)
+                                            return out.value(new HoverNode<>(out.nodes(), HoverNode.Action.TEXT_NODE,
+                                                                             new ParentNode(parse(restoreOriginalEscaping(cleanArgument(lines[1])), handlers)
                                                                              )
                                             ));
                                         } else if (action == HoverEvent.Action.SHOW_ENTITY) {
                                             lines = lines[1].split(":", 3);
                                             if (lines.length == 3) {
-                                                return out.value(new HoverNode<HoverNode.EntityNodeContent, HoverEvent.ShowEntity>(out.nodes(),
-                                                                                 HoverNode.Action.ENTITY,
-																				 new HoverNode.EntityNodeContent(
-																						 EntityType.get(restoreOriginalEscaping(restoreOriginalEscaping(cleanArgument(lines[0])))).orElse(EntityType.PIG),
-																						 UUID.fromString(cleanArgument(lines[1])),
-																						 new ParentNode(parse(restoreOriginalEscaping(restoreOriginalEscaping(cleanArgument(lines[2]))), handlers)))
+                                                return out.value(new HoverNode<>(out.nodes(), HoverNode.Action.ENTITY_NODE,
+                                                                                 new HoverNode.EntityNodeContent(
+                                                                                         EntityType.get(restoreOriginalEscaping(restoreOriginalEscaping(cleanArgument(lines[0])))).orElse(EntityType.PIG),
+                                                                                         UUID.fromString(cleanArgument(lines[1])),
+                                                                                         new ParentNode(parse(restoreOriginalEscaping(restoreOriginalEscaping(cleanArgument(lines[2]))), handlers)))
                                                 ));
                                             }
                                         } else if (action == HoverEvent.Action.SHOW_ITEM) {
                                             try {
-                                                return out.value(new HoverNode<HoverEvent.ShowItem, HoverEvent.ShowItem>(out.nodes(),
-                                                        HoverNode.Action.VANILLA_ITEM,
-                                                        new HoverEvent.ShowItem(
-                                                                // FIXME, you cannot pass Dynamic.EMPTY here; it will always throw
-                                                                ItemStack.fromNbtOrEmpty(DynamicRegistryManager.EMPTY,
-                                                                StringNbtReader.readCompound(restoreOriginalEscaping(cleanArgument(lines[1]))))
-                                                        )
+                                                var nbt = StringNbtReader.readCompound(restoreOriginalEscaping(cleanArgument(lines[1])));
+                                                return out.value(new HoverNode<>(out.nodes(), HoverNode.Action.LAZY_ITEM_STACK,
+                                                                                 new HoverNode.LazyItemStackNodeContent<>(
+                                                                                         Identifier.of(nbt.getString("id")),
+                                                                                         nbt.contains("count") ? nbt.getInt("count") : 1,
+                                                                                         NbtOps.INSTANCE,
+                                                                                         nbt.contains("components") ? nbt.getCompound("components") : null
+                                                                                 )
                                                 ));
                                             } catch (Throwable e) {
                                                 lines = lines[1].split(":", 2);
                                                 if (lines.length > 0) {
-                                                    var stack = Registries.ITEM.get(Identifier.tryParse(lines[0])).getDefaultStack();
+                                                    var stack = Registries.ITEM.get(Identifier.of(lines[0])).getDefaultStack();
 
                                                     if (lines.length > 1) {
                                                         stack.setCount(Integer.parseInt(lines[1]));
                                                     }
 
-                                                    return out.value(new HoverNode<HoverEvent.ShowItem, HoverEvent.ShowItem>(out.nodes(),
-                                                            HoverNode.Action.VANILLA_ITEM,
-                                                            new HoverEvent.ShowItem(stack)
+                                                    return out.value(new HoverNode<>(out.nodes(), HoverNode.Action.VANILLA_ITEM_STACK,
+                                                                                     new HoverEvent.ShowItem(stack)
                                                     ));
                                                 }
                                             }
                                         } else {
-                                            return out.value(new HoverNode<TextNode, HoverEvent.ShowText>(out.nodes(),
-                                                                             HoverNode.Action.TEXT,
-                                                                                     new ParentNode(parse(restoreOriginalEscaping(cleanArgument(data)), handlers)
-                                                                             )
+                                            return out.value(new HoverNode<>(out.nodes(), HoverNode.Action.TEXT_NODE,
+                                                                             new ParentNode(parse(restoreOriginalEscaping(cleanArgument(data)), handlers))
                                             ));
                                         }
                                     } else {
-                                        return out.value(new HoverNode<TextNode, HoverEvent.ShowText>(out.nodes(),
-                                                                         HoverNode.Action.TEXT,
-                                                                                 new ParentNode(parse(restoreOriginalEscaping(cleanArgument(data)), handlers)
+                                        return out.value(new HoverNode<>(out.nodes(), HoverNode.Action.TEXT_NODE,
+                                                                         new ParentNode(parse(restoreOriginalEscaping(cleanArgument(data)), handlers)
                                                                          )
                                         ));
                                     }

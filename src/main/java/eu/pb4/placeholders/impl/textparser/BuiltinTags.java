@@ -226,7 +226,7 @@ public final class BuiltinTags {
                     (data) -> new KeybindNode(data.getNext("value", ""))));
         }
 
-        // Not useful & broken
+        // Broken
         /*
         {
             TagRegistry.registerDefault(TextTag.enclosing("click", "click_action", false,
@@ -343,103 +343,65 @@ public final class BuiltinTags {
                                             type = data.getNext("type", "");
                                         }
                                         type = type.toLowerCase(Locale.ROOT);
-                                        HoverNode.LOGGER.error("HoverNode:2: type {}", type);
-                                        if (type.equals("show_text") || type.equals("text")) {
-                                            HoverNode.LOGGER.error("HoverNode:show_text:1 type {}", type);
-                                            return new HoverNode<TextNode, HoverEvent.ShowText>(nodes,
-                                                                   HoverNode.Action.TEXT,
-                                                                        parser.parseNode(data.getNext("value", ""))
-                                                                   );
-                                        } else if (type.equals("show_entity") || type.equals("entity")) {
-                                            HoverNode.LOGGER.error("HoverNode:show_entity:2 type {}", type);
-                                            var entType = data.getNext("entity", "");
-                                            HoverNode.LOGGER.error("EntityNodeContent/1: entType [{}]", entType);
-                                            var uuid = data.getNext("uuid", Util.NIL_UUID.toString());
-                                            HoverNode.LOGGER.error("EntityNodeContent/1: uuid [{}]", uuid);
-                                            var parent = new ParentNode(parser.parseNode(data.get("name", 3, "")));
-                                            HoverNode.LOGGER.error("EntityNodeContent/1: parent [{}]", parent.toString());
-
-                                            HoverNode.EntityNodeContent TEST = new HoverNode.EntityNodeContent(
-                                                    EntityType.get(entType).orElse(EntityType.PIG),
-                                                    UUID.fromString(uuid),
-                                                    parent
-                                            );
-
-                                            HoverNode.LOGGER.error("EntityNode:1: {}", TEST.toString());
-
-                                            return new HoverNode<HoverNode.EntityNodeContent, HoverEvent.ShowEntity>(nodes,
-                                                                   HoverNode.Action.ENTITY,
-                                                                        TEST
-																   );
-                                        } else if (type.equals("show_item") || type.equals("item")) {
-                                            HoverNode.LOGGER.error("HoverNode:show_item:3 type {}", type);
-                                            var value = data.getNext("value", "");
-                                            try {
-                                                var nbt = StringNbtReader.readCompound(value);
-                                                HoverNode.LOGGER.error("LazyStackNode/NBT:1: nbt [{}]", nbt.toString());
-                                                var id = Identifier.of(nbt.getString("id"));
-                                                HoverNode.LOGGER.error("LazyStackNode/NBT:1: id [{}]", id.toString());
-                                                var count = nbt.contains("count") ? nbt.getInt("count") : 1;
-                                                HoverNode.LOGGER.error("LazyStackNode/NBT:1: count [{}]", count);
-                                                var comps = nbt.contains("components") ? nbt.getCompound("components") : null;
-                                                HoverNode.LOGGER.error("LazyStackNode/NBT:1: comps [{}]", comps != null ? comps.toString() : "null");
-
-                                                HoverNode.LazyItemStackNodeContent<?> TEST = new HoverNode.LazyItemStackNodeContent<>(
-                                                        id, count,
-                                                        NbtOps.INSTANCE,
-                                                                comps);
-
-                                                HoverNode.LOGGER.error("LazyStackNode/NBT:2: {}", TEST.toString());
-
-                                                return new HoverNode<HoverNode.LazyItemStackNodeContent<?>, HoverEvent.ShowItem>(nodes,
-                                                                       HoverNode.Action.ITEM_STACK,
-                                                                            TEST
-                                                                       );
-                                            } catch (Throwable err) {
-                                                HoverNode.LOGGER.error("LazyStackNode/NBT:3: THROW: {}", err.getMessage());
-                                            }
-                                            try {
-                                                var item = Identifier.of(data.get("item", value));
-                                                HoverNode.LOGGER.error("LazyStackNode/STRING:1: item [{}]", item.toString());
-                                                var count = 1;
-                                                var countTxt = data.getNext("count", "1");
-                                                if (countTxt != null) {
-                                                    count = Integer.parseInt(countTxt);
-                                                }
-                                                HoverNode.LOGGER.error("LazyStackNode/STRING:1: count [{}]", count);
-                                                /*
-                                                var comps = Either.right(data.getNestedOrEmpty("components"));
-                                                HoverNode.LOGGER.error("LazyStackNode/STRING:1: comps [{}]", comps.toString());
-                                                 */
-
-                                                HoverNode.LazyItemStackNodeContent<?> TEST = new HoverNode.LazyItemStackNodeContent<>(
-                                                        item, count,
-                                                        StringArgOps.INSTANCE,
-                                                                Either.right(data.getNestedOrEmpty("components"))
-                                                        );
-
-                                                HoverNode.LOGGER.error("LazyStackNode/STRING:2: {}", TEST.toString());
-
-                                                return new HoverNode<>(nodes,
-                                                                       HoverNode.Action.ITEM_STACK,
-                                                                       TEST
+                                        switch (type) {
+                                            case "show_text", "text" -> {
+                                                return new HoverNode<>(nodes, HoverNode.Action.TEXT_NODE,
+                                                                       parser.parseNode(data.getNext("value", ""))
                                                 );
-                                            } catch (Throwable err) {
-                                                HoverNode.LOGGER.error("LazyStackNode/STRING:3: THROW: {}", err.getMessage());
                                             }
-                                        } else {
-                                            HoverNode.LOGGER.error("HoverNode:show_text:4 type {}", type);
-                                            return new HoverNode<TextNode, HoverEvent.ShowText>(nodes,
-                                                                   HoverNode.Action.TEXT,
-                                                                        parser.parseNode(data.get("value", type))
-                                                                   );
+                                            case "show_entity", "entity" -> {
+                                                var entType = data.getNext("entity", "");
+                                                var uuid = data.getNext("uuid", Util.NIL_UUID.toString());
+
+                                                return new HoverNode<>(nodes, HoverNode.Action.ENTITY_NODE,
+                                                                       new HoverNode.EntityNodeContent(EntityType.get(entType).orElse(EntityType.PIG),
+                                                                                                       UUID.fromString(uuid),
+                                                                                                       new ParentNode(parser.parseNode(data.get("name", 3, "")))
+                                                                       )
+                                                );
+                                            }
+                                            case "show_item", "item" -> {
+                                                var value = data.getNext("value", "");
+                                                try
+                                                {
+                                                    var nbt = StringNbtReader.readCompound(value);
+
+                                                    return new HoverNode<>(nodes, HoverNode.Action.LAZY_ITEM_STACK,
+                                                                           new HoverNode.LazyItemStackNodeContent<>(Identifier.of(nbt.getString("id")),
+                                                                                                                    nbt.contains("count") ? nbt.getInt("count") : 1,
+                                                                                                                    NbtOps.INSTANCE,
+                                                                                                                    nbt.contains("components") ? nbt.getCompound("components") : null
+                                                                           )
+                                                    );
+                                                }
+                                                catch (Throwable ignored) { }
+                                                try {
+                                                    var id = Identifier.of(data.get("item", value));
+                                                    var count = 1;
+                                                    var countTxt = data.getNext("count", "1");
+                                                    if (countTxt != null) {
+                                                        count = Integer.parseInt(countTxt);
+                                                    }
+
+                                                    return new HoverNode<>(nodes, HoverNode.Action.LAZY_ITEM_STACK,
+                                                                           new HoverNode.LazyItemStackNodeContent<>(id, count,
+                                                                                                                    StringArgOps.INSTANCE,
+                                                                                                                    Either.right(data.getNestedOrEmpty("components"))
+                                                                           )
+                                                    );
+                                                }
+                                                catch (Throwable ignored) { }
+                                            }
+                                            default -> {
+                                                return new HoverNode<>(nodes, HoverNode.Action.TEXT_NODE,
+                                                                       parser.parseNode(data.get("value", type))
+                                                );
+                                            }
                                         }
                                     } else {
-                                        HoverNode.LOGGER.error("HoverNode:show_text:5 type {}", type);
-                                        return new HoverNode<TextNode, HoverEvent.ShowText>(nodes,
-                                                               HoverNode.Action.TEXT,
-                                                                    parser.parseNode(data.getNext("value"))
-                                                               );
+                                        return new HoverNode<>(nodes, HoverNode.Action.TEXT_NODE,
+                                                               parser.parseNode(data.getNext("value"))
+                                        );
                                     }
                                 } catch (Exception e) {
                                     // Shut

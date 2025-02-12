@@ -4,7 +4,6 @@ import eu.pb4.placeholders.api.node.*;
 import eu.pb4.placeholders.api.node.parent.*;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.component.DataComponentTypes;
-import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;
 import net.minecraft.text.*;
 import net.minecraft.util.Formatting;
@@ -254,8 +253,6 @@ public class GeneralUtils {
             return new ParentNode(list);
         } else {
             var style = input.getStyle();
-            //var hoverValue = style.getHoverEvent() != null && style.getHoverEvent().getAction() == HoverEvent.Action.SHOW_TEXT
-                    // ? convertToNodes(style.getHoverEvent().getValue(HoverEvent.Action.SHOW_TEXT)) : null;
             var hoverValue = style.getHoverEvent() != null ? convertToNodes(getHoverValue(style)) : null;
             var clickValue = style.getClickEvent() != null ? (TextNode) getClickValue(style) : null;
             var insertion = style.getInsertion() != null ? new LiteralNode(style.getInsertion()) : null;
@@ -270,6 +267,7 @@ public class GeneralUtils {
                 case SHOW_TEXT -> {
                     return ((HoverEvent.ShowText) style.getHoverEvent()).value();
                 }
+                /*
                 case SHOW_ITEM -> {
                     return ((HoverEvent.ShowItem) style.getHoverEvent()).item().toHoverableText();
                 }
@@ -281,6 +279,7 @@ public class GeneralUtils {
                     }
                     return Text.literal("id="+ EntityType.getId(content.entityType).toString());
                 }
+                 */
             }
         }
 

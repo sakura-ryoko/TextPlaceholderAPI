@@ -58,7 +58,7 @@ public final class MarkdownLiteParserV1 implements NodeParser {
                         TextNode.array(TextNode.of("["), TranslatedNode.of("options.hidden"), TextNode.of("]")),
                         Formatting.GRAY, Formatting.ITALIC
                 )
-        ), HoverNode.Action.TEXT, TextNode.asSingle(textNodes));
+        ), HoverNode.Action.TEXT_NODE, TextNode.asSingle(textNodes));
     }
 
     public static TextNode defaultQuoteFormatting(TextNode[] textNodes) {
