@@ -43,7 +43,7 @@ public class GeneralUtils {
     public static boolean isEmpty(Text text) {
         return (
                 text.getContent() == PlainTextContent.EMPTY
-                        || (text.getContent() instanceof PlainTextContent.Literal l && l.string().isEmpty())
+                || (text.getContent() instanceof PlainTextContent.Literal l && l.string().isEmpty())
         ) && text.getSiblings().isEmpty();
     }
 
@@ -205,9 +205,7 @@ public class GeneralUtils {
             if (rarity) {
                 mutableText.formatted(stack.getRarity().getFormatting());
             }
-            mutableText.styled((style) -> {
-                return style.withHoverEvent(new HoverEvent.ShowItem(stack));
-            });
+            mutableText.styled((style) -> style.withHoverEvent(new HoverEvent.ShowItem(stack)));
 
             return mutableText;
         }
@@ -340,8 +338,7 @@ public class GeneralUtils {
     public record Pair<L, R>(L left, R right) {
     }
 
-    public record MutableTransformer(
-            Function<Style, Style> textMutableTextFunction) implements Function<MutableText, Text> {
+    public record MutableTransformer(Function<Style, Style> textMutableTextFunction) implements Function<MutableText, Text> {
         public static final MutableTransformer CLEAR = new MutableTransformer(x -> Style.EMPTY);
 
         @Override

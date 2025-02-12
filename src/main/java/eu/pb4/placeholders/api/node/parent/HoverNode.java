@@ -1,10 +1,10 @@
 package eu.pb4.placeholders.api.node.parent;
 
+import com.mojang.serialization.DynamicOps;
 import eu.pb4.placeholders.api.ParserContext;
 import eu.pb4.placeholders.api.PlaceholderContext;
 import eu.pb4.placeholders.api.node.TextNode;
 import eu.pb4.placeholders.api.parsers.NodeParser;
-import com.mojang.serialization.DynamicOps;
 import net.minecraft.component.ComponentChanges;
 import net.minecraft.entity.EntityType;
 import net.minecraft.item.ItemStack;

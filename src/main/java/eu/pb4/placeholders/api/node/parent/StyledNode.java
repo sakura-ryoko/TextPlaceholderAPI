@@ -1,14 +1,14 @@
 package eu.pb4.placeholders.api.node.parent;
 
-import java.net.URI;
 import eu.pb4.placeholders.api.ParserContext;
 import eu.pb4.placeholders.api.node.TextNode;
 import eu.pb4.placeholders.api.parsers.NodeParser;
-import org.jetbrains.annotations.Nullable;
-
 import net.minecraft.text.ClickEvent;
 import net.minecraft.text.HoverEvent;
 import net.minecraft.text.Style;
+import org.jetbrains.annotations.Nullable;
+
+import java.net.URI;
 
 public final class StyledNode extends SimpleStylingNode {
     private final Style style;
@@ -28,10 +28,8 @@ public final class StyledNode extends SimpleStylingNode {
     public Style style(ParserContext context) {
         var style = this.style;
 
-        if (this.hoverValue != null && style.getHoverEvent() != null) {
-            switch (style.getHoverEvent().getAction()) {
-                case SHOW_TEXT, SHOW_ENTITY, SHOW_ITEM -> style = style.withHoverEvent(new HoverEvent.ShowText(this.hoverValue.toText(context, true)));
-            }
+        if (this.hoverValue != null && style.getHoverEvent() != null && style.getHoverEvent().getAction() == HoverEvent.Action.SHOW_TEXT) {
+            style = style.withHoverEvent(new HoverEvent.ShowText(this.hoverValue.toText(context, true)));
         }
 
         if (this.clickValue != null && style.getClickEvent() != null) {
@@ -40,15 +38,11 @@ public final class StyledNode extends SimpleStylingNode {
                 case OPEN_URL -> {
                     try {
                         style = style.withClickEvent(new ClickEvent.OpenUrl(URI.create(node)));
-                    } catch (Exception e) {
-                        // NO-OP
-                    }
+                    } catch (Exception ignored) { }
                 } case CHANGE_PAGE -> {
                     try {
                         style = style.withClickEvent(new ClickEvent.ChangePage(Integer.parseInt(node)));
-                    } catch (Exception e) {
-                        // NO-OP
-                    }
+                    } catch (Exception ignored) { }
                 }
                 case OPEN_FILE -> style = style.withClickEvent(new ClickEvent.OpenFile(node));
 				case RUN_COMMAND -> style = style.withClickEvent(new ClickEvent.RunCommand(node));
