@@ -260,13 +260,15 @@ public class TestMod implements ModInitializer {
     private static int test6x(CommandContext<ServerCommandSource> context) {
         try {
             ServerPlayerEntity player = context.getSource().getPlayer();
+            ParserContext parsingContext = ParserContext.of();
+            parsingContext.with(ParserContext.Key.WRAPPER_LOOKUP, player.getRegistryManager());     // You need to use this for Hover Item to work
             var form = context.getArgument("text", String.class);
             player.sendMessage(Text.literal("------------------------------"), false);
             player.sendMessage(Text.literal("Input.   | " + form), false);
-            player.sendMessage(Text.literal("STF-V1 | ").append(TextParserV1.DEFAULT.parseText(form, ParserContext.of())), false);
-            player.sendMessage(Text.literal("STF-V2 | ").append(TagParser.SIMPLIFIED_TEXT_FORMAT.parseText(form, ParserContext.of())), false);
-            player.sendMessage(Text.literal("STF+QT | ").append(TagParser.QUICK_TEXT_WITH_STF.parseText(form, ParserContext.of())), false);
-            player.sendMessage(Text.literal("QT       | ").append(TagParser.QUICK_TEXT.parseText(form, ParserContext.of())), false);
+            player.sendMessage(Text.literal("STF-V1 | ").append(TextParserV1.DEFAULT.parseText(form, parsingContext)), false);
+            player.sendMessage(Text.literal("STF-V2 | ").append(TagParser.SIMPLIFIED_TEXT_FORMAT.parseText(form, parsingContext)), false);
+            player.sendMessage(Text.literal("STF+QT | ").append(TagParser.QUICK_TEXT_WITH_STF.parseText(form, parsingContext)), false);
+            player.sendMessage(Text.literal("QT       | ").append(TagParser.QUICK_TEXT.parseText(form, parsingContext)), false);
         } catch (Throwable e) {
             e.printStackTrace();
         }
