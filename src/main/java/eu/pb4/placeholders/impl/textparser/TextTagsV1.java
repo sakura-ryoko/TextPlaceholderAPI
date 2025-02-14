@@ -142,7 +142,7 @@ public final class TextTagsV1 {
                                 textList.add(new ParentNode(parse(removeEscaping(cleanArgument(part)), handlers)));
                             }
 
-                            var out = TranslatedNode.of(removeEscaping(cleanArgument(lines[0])), textList.toArray(TextParserImpl.CASTER));
+                            var out = TranslatedNode.of(removeEscaping(cleanArgument(lines[0])), (Object[]) textList.toArray(TextParserImpl.CASTER));
                             return new TextParserV1.TagNodeValue(out, 0);
                         }
                         return TextParserV1.TagNodeValue.EMPTY;
@@ -168,7 +168,7 @@ public final class TextTagsV1 {
                                 textList.add(new ParentNode(parse(removeEscaping(cleanArgument(part)), handlers)));
                             }
 
-                            var out = TranslatedNode.ofFallback(removeEscaping(cleanArgument(lines[0])), removeEscaping(cleanArgument(lines[1])), textList.toArray(TextParserImpl.CASTER));
+                            var out = TranslatedNode.ofFallback(removeEscaping(cleanArgument(lines[0])), removeEscaping(cleanArgument(lines[1])), (Object[]) textList.toArray(TextParserImpl.CASTER));
                             return new TextParserV1.TagNodeValue(out, 0);
                         }
                         return TextParserV1.TagNodeValue.EMPTY;
@@ -620,7 +620,7 @@ public final class TextTagsV1 {
                 case "all" -> x -> Style.EMPTY;
                 default -> x -> x;
             });
-        };
+        }
 
         return new GeneralUtils.MutableTransformer(func);
     }

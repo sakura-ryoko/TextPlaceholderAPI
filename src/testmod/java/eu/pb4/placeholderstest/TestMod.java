@@ -26,8 +26,8 @@ import static net.minecraft.server.command.CommandManager.literal;
 import static net.minecraft.server.command.CommandManager.argument;
 
 
+@SuppressWarnings("deprecation")
 public class TestMod implements ModInitializer {
-
     private static int perf(CommandContext<ServerCommandSource> context) {
         var input = context.getArgument("text", String.class);
         ServerPlayerEntity player = context.getSource().getPlayer();
